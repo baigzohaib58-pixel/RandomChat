@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RandomChat</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <main class="app">
+
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">💬</div>
+
+                <div>
+                    <h1>RandomChat</h1>
+                    <p>Talk to someone new</p>
+                </div>
+            </div>
+
+            <div class="status">
+                <span id="statusDot"></span>
+                <span id="statusText">Ready to chat</span>
+            </div>
+        </header>
+
+
+        <section id="welcomeScreen" class="welcome-screen">
+
+            <div class="welcome-card">
+
+                <div class="big-icon">💬</div>
+
+                <h2>Meet someone new</h2>
+
+                <p>
+                    Start an anonymous conversation
+                    with a random person online.
+                </p>
+
+                <button
+                    id="startBtn"
+                    class="primary-btn"
+                >
+                    Start Chat
+                </button>
+
+                <p class="small-text">
+                    Be respectful. Don't share personal information.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section id="chatScreen" class="chat-screen hidden">
+
+            <div
+                id="messages"
+                class="messages"
+            ></div>
+
+            <div
+                id="systemMessage"
+                class="system-message"
+            >
+                Click "Find Stranger" to start.
+            </div>
+
+
+            <div class="controls">
+
+                <button
+                    id="nextBtn"
+                    class="next-btn"
+                    disabled
+                >
+                    Next ⏭
+                </button>
+
+                <button
+                    id="stopBtn"
+                    class="stop-btn"
+                >
+                    Stop
+                </button>
+
+            </div>
+
+
+            <form
+                id="messageForm"
+                class="message-form"
+            >
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    placeholder="Type a message..."
+                    maxlength="1000"
+                    autocomplete="off"
+                    disabled
+                >
+
+                <button
+                    id="sendBtn"
+                    type="submit"
+                    disabled
+                >
+                    Send
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
