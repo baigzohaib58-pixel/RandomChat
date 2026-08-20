@@ -554,14 +554,6 @@ function removeFromQueues(
 // START SERVER
 // ===============================
 
-server.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-
-        console.log(
-            `RandomChat running on port ${PORT}`
-        );
-
-    }
-);
+server.listen(PORT, () => {
+    console.log(`RandomChat running on port ${PORT}`);
+});
