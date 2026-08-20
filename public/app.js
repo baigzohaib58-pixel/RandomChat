@@ -1,88 +1,541 @@
 const socket = io();
 
-const welcomeScreen =
-    document.getElementById("welcomeScreen");
+let selectedMode = "text";
+let connected = false;
+let localStream = null;
+let peerConnection = null;
+let isMuted = false;
+let isCameraOff = false;
+let partnerId = null;
+let isInitiator = false;
 
-const chatScreen =
-    document.getElementById("chatScreen");
-
-const startBtn =
-    document.getElementById("startBtn");
-
-const nextBtn =
-    document.getElementById("nextBtn");
-
-const stopBtn =
-    document.getElementById("stopBtn");
-
-const messageForm =
-    document.getElementById("messageForm");
-
-const messageInput =
-    document.getElementById("messageInput");
-
-const sendBtn =
-    document.getElementById("sendBtn");
-
-const messages =
-    document.getElementById("messages");
-
-const systemMessage =
-    document.getElementById("systemMessage");
-
-const statusText =
-    document.getElementById("statusText");
-
-const statusDot =
-    document.getElementById("statusDot");
+const rtcConfig = {
+    iceServers: [
+        {
+            urls: [
+                "stun:stun.l.google.com:19302",
+                "stun:stun1.l.google.com:19302"
+            ]
+        }
+    ]
+};
 
 
-let isMatched = false;
+/* =========================
+   ELEMENTS
+========================= */
+
+const welcomeScreen = document.getElementById("welcomeScreen");
+const chatScreen = document.getElementById("chatScreen");
+
+const textModeBtn = document.getElementById("textModeBtn");
+const videoModeBtn = document.getElementById("videoModeBtn");
+const startBtn = document.getElementById("startBtn");
+
+const messages = document.getElementById("messages");
+const messageForm = document.getElementById("messageForm");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+const nextBtn = document.getElementById("nextBtn");
+const stopBtn = document.getElementById("stopBtn");
+
+const statusDot = document.getElementById("statusDot");
+const statusText = document.getElementById("statusText");
+const chatStatus = document.getElementById("chatStatus");
+const systemMessage = document.getElementById("systemMessage");
+
+const videoArea = document.getElementById("videoArea");
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+const remotePlaceholder = document.getElementById("remotePlaceholder");
+
+const micBtn = document.getElementById("micBtn");
+const cameraBtn = document.getElementById("cameraBtn");
+
+const reportBtn = document.getElementById("reportBtn");
+const reportModal = document.getElementById("reportModal");
+const closeReport = document.getElementById("closeReport");
+const reportOptions = document.querySelectorAll(".report-option");
 
 
-/* Status */
+/* =========================
+   MODE SELECTION
+========================= */
+
+textModeBtn.addEventListener("click", () => {
+    selectedMode = "text";
+    textModeBtn.classList.add("active");
+    videoModeBtn.classList.remove("active");
+});
+
+videoModeBtn.addEventListener("click", () => {
+    selectedMode = "video";
+    videoModeBtn.classList.add("active");
+    textModeBtn.classList.remove("active");
+});
+
+
+/* =========================
+   STATUS
+========================= */
 
 function setStatus(text, type = "") {
     statusText.textContent = text;
-
-    statusDot.className = "";
-
-    if (type) {
-        statusDot.classList.add(type);
-    }
+    statusDot.className = "status-dot " + type;
 }
-
-
-/* System message */
 
 function setSystemMessage(text) {
     systemMessage.textContent = text;
 }
 
 
-/* Enable / disable chat */
+/* =========================
+   START CHAT
+========================= */
 
-function setChatEnabled(enabled) {
-    isMatched = enabled;
+startBtn.addEventListener("click", async () => {
 
-    messageInput.disabled = !enabled;
-    sendBtn.disabled = !enabled;
+    welcomeScreen.classList.add("hidden");
+    chatScreen.classList.remove("hidden");
 
-    nextBtn.disabled = false;
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+    nextBtn.disabled = true;
 
-    if (enabled) {
-        messageInput.focus();
+    setStatus("Preparing", "waiting");
+    chatStatus.textContent = "Preparing...";
+    setSystemMessage("Preparing your chat...");
+
+    if (selectedMode === "video") {
+        videoArea.classList.remove("hidden");
+
+        const success = await startCamera();
+
+        if (!success) {
+            stopEverything();
+            chatScreen.classList.add("hidden");
+            welcomeScreen.classList.remove("hidden");
+            return;
+        }
+    } else {
+        videoArea.classList.add("hidden");
+    }
+
+    socket.emit("find_partner", {
+        mode: selectedMode
+    });
+});
+
+
+/* =========================
+   CAMERA / MICROPHONE
+========================= */
+
+async function startCamera() {
+
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: "user",
+                width: {
+                    ideal: 1280
+                },
+                height: {
+                    ideal: 720
+                }
+            },
+            audio: true
+        });
+
+        localVideo.srcObject = localStream;
+
+        isMuted = false;
+        isCameraOff = false;
+
+        micBtn.textContent = "🎤";
+        cameraBtn.textContent = "📹";
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Camera error:", error);
+
+        alert(
+            "Camera and microphone permission is required for video chat."
+        );
+
+        return false;
     }
 }
 
 
-/* Add message */
+/* =========================
+   SOCKET CONNECTION
+========================= */
+
+socket.on("connect", () => {
+    connected = true;
+    setStatus("Online", "online");
+});
+
+socket.on("disconnect", () => {
+
+    connected = false;
+
+    setStatus("Offline");
+
+    chatStatus.textContent = "Disconnected";
+
+    setSystemMessage(
+        "Connection lost. Refresh the page."
+    );
+
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+    nextBtn.disabled = true;
+
+    closePeerConnection();
+});
+
+
+/* =========================
+   WAITING
+========================= */
+
+socket.on("waiting", () => {
+
+    setStatus("Searching", "waiting");
+
+    chatStatus.textContent =
+        "Searching for someone...";
+
+    setSystemMessage(
+        "Finding a stranger..."
+    );
+
+});
+
+
+/* =========================
+   PARTNER FOUND
+========================= */
+
+socket.on("partner_found", async (data) => {
+    partnerId = data.partnerId;
+    isInitiator = data.initiator;
+    chatStatus.textContent = "Connected";
+
+    setStatus("Connected", "online");
+
+    setSystemMessage(
+        "You are now connected!"
+    );
+
+    messageInput.disabled = false;
+    sendBtn.disabled = false;
+    nextBtn.disabled = false;
+
+    removeEmptyState();
+
+    if (selectedMode === "video") {
+
+        remotePlaceholder.classList.remove("hidden");
+
+        createPeerConnection();
+
+        /*
+         * One user creates the offer.
+         * We use socket ID comparison so both users
+         * don't create offers at the same time.
+         */
+    if (isInitiator) {
+         await createAndSendOffer();
+}
+    }
+
+});
+
+
+/*
+ * The server currently doesn't send partner IDs.
+ * For reliable offer creation, the server will need
+ * one small update in the next step.
+ */
+
+
+/* =========================
+   CREATE PEER CONNECTION
+========================= */
+
+function createPeerConnection() {
+
+    closePeerConnection();
+
+    peerConnection =
+        new RTCPeerConnection(rtcConfig);
+
+    localStream.getTracks().forEach(track => {
+
+        peerConnection.addTrack(
+            track,
+            localStream
+        );
+
+    });
+
+
+    peerConnection.ontrack = event => {
+
+        console.log(
+            "Remote stream received"
+        );
+
+        remoteVideo.srcObject =
+            event.streams[0];
+
+        remotePlaceholder.classList.add(
+            "hidden"
+        );
+
+    };
+
+
+    peerConnection.onicecandidate =
+        event => {
+
+            if (event.candidate) {
+
+                socket.emit(
+                    "webrtc-ice-candidate",
+                    event.candidate
+                );
+
+            }
+
+        };
+
+
+    peerConnection.onconnectionstatechange =
+        () => {
+
+            console.log(
+                "WebRTC:",
+                peerConnection.connectionState
+            );
+
+            if (
+                peerConnection.connectionState ===
+                "connected"
+            ) {
+
+                setSystemMessage(
+                    "Video connected"
+                );
+
+            }
+
+        };
+
+}
+
+
+/* =========================
+   CREATE OFFER
+========================= */
+
+async function createAndSendOffer() {
+
+    try {
+
+        const offer =
+            await peerConnection.createOffer();
+
+        await peerConnection.setLocalDescription(
+            offer
+        );
+
+        socket.emit(
+            "webrtc-offer",
+            offer
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Offer error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================
+   RECEIVE OFFER
+========================= */
+
+socket.on(
+    "webrtc-offer",
+    async offer => {
+
+        try {
+
+            if (!peerConnection) {
+                createPeerConnection();
+            }
+
+            await peerConnection.setRemoteDescription(
+                new RTCSessionDescription(
+                    offer
+                )
+            );
+
+            const answer =
+                await peerConnection.createAnswer();
+
+            await peerConnection.setLocalDescription(
+                answer
+            );
+
+            socket.emit(
+                "webrtc-answer",
+                answer
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Offer handling error:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================
+   RECEIVE ANSWER
+========================= */
+
+socket.on(
+    "webrtc-answer",
+    async answer => {
+
+        try {
+
+            if (!peerConnection) return;
+
+            await peerConnection.setRemoteDescription(
+                new RTCSessionDescription(
+                    answer
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Answer error:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================
+   RECEIVE ICE CANDIDATE
+========================= */
+
+socket.on(
+    "webrtc-ice-candidate",
+    async candidate => {
+
+        try {
+
+            if (
+                peerConnection &&
+                candidate
+            ) {
+
+                await peerConnection.addIceCandidate(
+                    new RTCIceCandidate(
+                        candidate
+                    )
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "ICE error:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================
+   TEXT MESSAGE
+========================= */
+
+messageForm.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        const text =
+            messageInput.value.trim();
+
+        if (!text || !connected) return;
+
+        socket.emit("message", {
+            text: text
+        });
+
+        addMessage(text, "mine");
+
+        messageInput.value = "";
+        messageInput.focus();
+
+    }
+);
+
+
+socket.on("message", data => {
+
+    const text =
+        typeof data === "string"
+            ? data
+            : data?.text;
+
+    if (!text) return;
+
+    addMessage(text, "stranger");
+
+});
+
 
 function addMessage(text, type) {
-    const message = document.createElement("div");
+
+    removeEmptyState();
+
+    const message =
+        document.createElement("div");
 
     message.className =
-        `message ${type}`;
+        "message " + type;
 
     const label =
         document.createElement("span");
@@ -96,9 +549,8 @@ function addMessage(text, type) {
             : "Stranger";
 
     const content =
-        document.createElement("span");
+        document.createElement("div");
 
-    // textContent prevents HTML injection
     content.textContent = text;
 
     message.appendChild(label);
@@ -108,192 +560,269 @@ function addMessage(text, type) {
 
     messages.scrollTop =
         messages.scrollHeight;
+
 }
 
 
-/* Start */
+function removeEmptyState() {
 
-startBtn.addEventListener(
-    "click",
-    () => {
-        welcomeScreen.classList.add("hidden");
-        chatScreen.classList.remove("hidden");
-
-        messages.innerHTML = "";
-
-        setChatEnabled(false);
-
-        setSystemMessage(
-            "Looking for someone to chat with..."
+    const empty =
+        document.getElementById(
+            "emptyState"
         );
 
-        setStatus(
-            "Looking for stranger",
-            "waiting"
-        );
-
-        socket.emit("find-partner");
+    if (empty) {
+        empty.remove();
     }
-);
+
+}
 
 
-/* Next */
+/* =========================
+   PARTNER LEFT
+========================= */
+
+socket.on("partner_left", () => {
+
+    setStatus("Searching", "waiting");
+
+    chatStatus.textContent =
+        "Stranger left";
+
+    setSystemMessage(
+        "The stranger disconnected."
+    );
+
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+    nextBtn.disabled = true;
+
+    closePeerConnection();
+
+});
+
+
+/* =========================
+   NEXT STRANGER
+========================= */
 
 nextBtn.addEventListener(
     "click",
     () => {
-        messages.innerHTML = "";
 
-        setChatEnabled(false);
-
-        setSystemMessage(
-            "Finding a new stranger..."
-        );
-
-        setStatus(
-            "Looking for stranger",
-            "waiting"
-        );
+        closePeerConnection();
 
         socket.emit("next");
+
+        clearMessages();
+
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        nextBtn.disabled = true;
+
+        setStatus("Searching", "waiting");
+
+        chatStatus.textContent =
+            "Searching...";
+
+        setSystemMessage(
+            "Finding another stranger..."
+        );
+
+        if (selectedMode === "video") {
+            remoteVideo.srcObject = null;
+            remotePlaceholder.classList.remove(
+                "hidden"
+            );
+        }
+
     }
 );
 
 
-/* Stop */
+/* =========================
+   STOP
+========================= */
 
 stopBtn.addEventListener(
     "click",
     () => {
+
         socket.emit("stop");
 
-        setChatEnabled(false);
-
-        messages.innerHTML = "";
+        stopEverything();
 
         chatScreen.classList.add("hidden");
         welcomeScreen.classList.remove("hidden");
 
-        setStatus("Ready to chat");
+        setStatus("Ready");
 
-        setSystemMessage(
-            "Click Start Chat to begin."
-        );
     }
 );
 
 
-/* Send message */
+function stopEverything() {
 
-messageForm.addEventListener(
-    "submit",
-    (event) => {
-        event.preventDefault();
+    closePeerConnection();
 
-        const message =
-            messageInput.value.trim();
+    stopLocalStream();
 
-        if (!message || !isMatched) {
-            return;
+    clearMessages();
+
+    messageInput.value = "";
+
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+    nextBtn.disabled = true;
+
+    remoteVideo.srcObject = null;
+
+}
+
+
+function stopLocalStream() {
+
+    if (localStream) {
+
+        localStream.getTracks().forEach(
+            track => track.stop()
+        );
+
+        localStream = null;
+    }
+
+    localVideo.srcObject = null;
+
+}
+
+
+function closePeerConnection() {
+
+    if (peerConnection) {
+
+        peerConnection.ontrack = null;
+        peerConnection.onicecandidate = null;
+
+        peerConnection.close();
+
+        peerConnection = null;
+    }
+
+}
+
+
+/* =========================
+   MICROPHONE
+========================= */
+
+micBtn.addEventListener(
+    "click",
+    () => {
+
+        if (!localStream) return;
+
+        isMuted = !isMuted;
+
+        localStream
+            .getAudioTracks()
+            .forEach(track => {
+
+                track.enabled =
+                    !isMuted;
+
+            });
+
+        micBtn.textContent =
+            isMuted ? "🔇" : "🎤";
+
+    }
+);
+
+
+/* =========================
+   CAMERA
+========================= */
+
+cameraBtn.addEventListener(
+    "click",
+    () => {
+
+        if (!localStream) return;
+
+        isCameraOff = !isCameraOff;
+
+        localStream
+            .getVideoTracks()
+            .forEach(track => {
+
+                track.enabled =
+                    !isCameraOff;
+
+            });
+
+        cameraBtn.textContent =
+            isCameraOff ? "🚫" : "📹";
+
+    }
+);
+
+
+/* =========================
+   REPORT
+========================= */
+
+reportBtn.addEventListener(
+    "click",
+    () => {
+        reportModal.classList.remove("hidden");
+    }
+);
+
+
+closeReport.addEventListener(
+    "click",
+    () => {
+        reportModal.classList.add("hidden");
+    }
+);
+
+
+reportOptions.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            socket.emit("report", {
+                reason:
+                    button.dataset.reason
+            });
+
+            reportModal.classList.add(
+                "hidden"
+            );
+
+            setSystemMessage(
+                "Report submitted."
+            );
+
+        }
+    );
+
+});
+
+
+reportModal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target === reportModal
+        ) {
+            reportModal.classList.add(
+                "hidden"
+            );
         }
 
-        socket.emit("message", message);
-
-        addMessage(message, "mine");
-
-        messageInput.value = "";
-        messageInput.focus();
     }
 );
-
-
-/* Socket events */
-
-socket.on("connected", () => {
-    setStatus("Connected", "online");
-});
-
-
-socket.on("waiting", () => {
-    setChatEnabled(false);
-
-    setSystemMessage(
-        "Waiting for another person..."
-    );
-
-    setStatus(
-        "Waiting for stranger",
-        "waiting"
-    );
-});
-
-
-socket.on("matched", () => {
-    messages.innerHTML = "";
-
-    setChatEnabled(true);
-
-    setSystemMessage(
-        "You are now chatting with a stranger."
-    );
-
-    setStatus(
-        "Chatting anonymously",
-        "online"
-    );
-});
-
-
-socket.on("message", (message) => {
-    if (!isMatched) return;
-
-    addMessage(message, "stranger");
-});
-
-
-socket.on("partner-left", () => {
-    setChatEnabled(false);
-
-    setSystemMessage(
-        "The stranger has left. Click Next to find someone else."
-    );
-
-    setStatus(
-        "Stranger disconnected"
-    );
-});
-
-
-socket.on("partner-disconnected", () => {
-    setChatEnabled(false);
-
-    setSystemMessage(
-        "Previous stranger disconnected. Looking for someone new..."
-    );
-
-    setStatus(
-        "Looking for stranger",
-        "waiting"
-    );
-});
-
-
-socket.on("stopped", () => {
-    setChatEnabled(false);
-});
-
-
-socket.on("disconnect", () => {
-    setChatEnabled(false);
-
-    setStatus("Server disconnected");
-
-    setSystemMessage(
-        "Connection lost. Please refresh the page."
-    );
-});
-
-
-socket.on("connect", () => {
-    setStatus("Connected", "online");
-});

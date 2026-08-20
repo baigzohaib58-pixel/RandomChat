@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#080b14"
     >
 
     <title>RandomChat</title>
@@ -18,120 +22,390 @@
 
 <body>
 
-    <main class="app">
+<div class="app">
 
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">💬</div>
+    <!-- HEADER -->
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                💬
+            </div>
+
+            <div class="brand-text">
+                <h1>RandomChat</h1>
+                <span>Meet someone new</span>
+            </div>
+
+        </div>
+
+        <div class="connection">
+
+            <span
+                id="statusDot"
+                class="status-dot"
+            ></span>
+
+            <span id="statusText">
+                Ready
+            </span>
+
+        </div>
+
+    </header>
+
+
+    <!-- WELCOME -->
+
+    <section
+        id="welcomeScreen"
+        class="welcome"
+    >
+
+        <div class="welcome-card">
+
+            <div class="welcome-icon">
+                ✨
+            </div>
+
+            <h2>Talk to someone new</h2>
+
+            <p>
+                Connect instantly with a random stranger
+                and start a conversation.
+            </p>
+
+
+            <!-- MODE -->
+
+            <div class="mode-title">
+                Choose your mode
+            </div>
+
+            <div class="mode-selector">
+
+                <button
+                    id="textModeBtn"
+                    class="mode active"
+                    type="button"
+                >
+                    <span>💬</span>
+                    <strong>Text</strong>
+                    <small>Chat by message</small>
+                </button>
+
+                <button
+                    id="videoModeBtn"
+                    class="mode"
+                    type="button"
+                >
+                    <span>📹</span>
+                    <strong>Video</strong>
+                    <small>Camera + microphone</small>
+                </button>
+
+            </div>
+
+
+            <button
+                id="startBtn"
+                class="start-button"
+                type="button"
+            >
+                <span>Start Chat</span>
+                <span>→</span>
+            </button>
+
+
+            <div class="safety-note">
+                🔒 Anonymous &nbsp; • &nbsp;
+                🛡️ Stay safe
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CHAT -->
+
+    <section
+        id="chatScreen"
+        class="chat-screen hidden"
+    >
+
+        <!-- VIDEO AREA -->
+
+        <div
+            id="videoArea"
+            class="video-area hidden"
+        >
+
+            <div class="remote-video-container">
+
+                <video
+                    id="remoteVideo"
+                    autoplay
+                    playsinline
+                ></video>
+
+                <div
+                    id="remotePlaceholder"
+                    class="video-placeholder"
+                >
+                    <div>👤</div>
+                    <span>Waiting for stranger...</span>
+                </div>
+
+                <div class="video-label">
+                    Stranger
+                </div>
+
+            </div>
+
+
+            <div class="local-video-container">
+
+                <video
+                    id="localVideo"
+                    autoplay
+                    muted
+                    playsinline
+                ></video>
+
+                <div class="video-label">
+                    You
+                </div>
+
+            </div>
+
+
+            <div class="video-controls">
+
+                <button
+                    id="micBtn"
+                    class="control-button"
+                    type="button"
+                    title="Microphone"
+                >
+                    🎤
+                </button>
+
+                <button
+                    id="cameraBtn"
+                    class="control-button"
+                    type="button"
+                    title="Camera"
+                >
+                    📹
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- CHAT HEADER -->
+
+        <div class="chat-header">
+
+            <div class="stranger-info">
+
+                <div class="avatar">
+                    👤
+                </div>
 
                 <div>
-                    <h1>RandomChat</h1>
-                    <p>Talk to someone new</p>
+                    <strong>Stranger</strong>
+
+                    <span
+                        id="chatStatus"
+                    >
+                        Searching...
+                    </span>
                 </div>
+
             </div>
 
-            <div class="status">
-                <span id="statusDot"></span>
-                <span id="statusText">Ready to chat</span>
-            </div>
-        </header>
 
-
-        <section id="welcomeScreen" class="welcome-screen">
-
-            <div class="welcome-card">
-
-                <div class="big-icon">💬</div>
-
-                <h2>Meet someone new</h2>
-
-                <p>
-                    Start an anonymous conversation
-                    with a random person online.
-                </p>
+            <div class="chat-actions">
 
                 <button
-                    id="startBtn"
-                    class="primary-btn"
+                    id="reportBtn"
+                    type="button"
+                    title="Report"
                 >
-                    Start Chat
+                    ⚠️
                 </button>
-
-                <p class="small-text">
-                    Be respectful. Don't share personal information.
-                </p>
 
             </div>
 
-        </section>
+        </div>
 
 
-        <section id="chatScreen" class="chat-screen hidden">
+        <!-- MESSAGES -->
+
+        <div
+            id="messages"
+            class="messages"
+        >
 
             <div
-                id="messages"
-                class="messages"
-            ></div>
-
-            <div
-                id="systemMessage"
-                class="system-message"
+                id="emptyState"
+                class="empty-state"
             >
-                Click "Find Stranger" to start.
-            </div>
+                <div>👋</div>
 
+                <strong>
+                    Looking for someone...
+                </strong>
 
-            <div class="controls">
-
-                <button
-                    id="nextBtn"
-                    class="next-btn"
-                    disabled
-                >
-                    Next ⏭
-                </button>
-
-                <button
-                    id="stopBtn"
-                    class="stop-btn"
-                >
-                    Stop
-                </button>
+                <span>
+                    Your conversation will appear here.
+                </span>
 
             </div>
 
+        </div>
 
-            <form
-                id="messageForm"
-                class="message-form"
+
+        <!-- SYSTEM STATUS -->
+
+        <div
+            id="systemMessage"
+            class="system-message"
+        >
+            Finding a stranger...
+        </div>
+
+
+        <!-- MESSAGE INPUT -->
+
+        <form
+            id="messageForm"
+            class="message-form"
+        >
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="Type a message..."
+                maxlength="1000"
+                autocomplete="off"
+                disabled
             >
 
-                <input
-                    id="messageInput"
-                    type="text"
-                    placeholder="Type a message..."
-                    maxlength="1000"
-                    autocomplete="off"
-                    disabled
-                >
+            <button
+                id="sendBtn"
+                type="submit"
+                disabled
+            >
+                <span>Send</span>
+                <span>➤</span>
+            </button>
 
-                <button
-                    id="sendBtn"
-                    type="submit"
-                    disabled
-                >
-                    Send
-                </button>
-
-            </form>
-
-        </section>
-
-    </main>
+        </form>
 
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+        <!-- BOTTOM CONTROLS -->
+
+        <div class="bottom-controls">
+
+            <button
+                id="nextBtn"
+                class="next-button"
+                type="button"
+                disabled
+            >
+                ⏭
+                <span>Next Stranger</span>
+            </button>
+
+            <button
+                id="stopBtn"
+                class="stop-button"
+                type="button"
+            >
+                ⏹
+                <span>Stop</span>
+            </button>
+
+        </div>
+
+
+        <div class="chat-footer">
+            Don't share passwords, addresses or financial information.
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- REPORT MODAL -->
+
+<div
+    id="reportModal"
+    class="modal hidden"
+>
+
+    <div class="modal-card">
+
+        <button
+            id="closeReport"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2>Report Stranger</h2>
+
+        <p>
+            Why are you reporting this person?
+        </p>
+
+        <button
+            class="report-option"
+            data-reason="Harassment"
+            type="button"
+        >
+            Harassment
+        </button>
+
+        <button
+            class="report-option"
+            data-reason="Spam"
+            type="button"
+        >
+            Spam
+        </button>
+
+        <button
+            class="report-option"
+            data-reason="Inappropriate content"
+            type="button"
+        >
+            Inappropriate content
+        </button>
+
+        <button
+            class="report-option"
+            data-reason="Other"
+            type="button"
+        >
+            Other
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
