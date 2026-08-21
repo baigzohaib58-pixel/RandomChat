@@ -44,11 +44,6 @@ const stopBtn = document.getElementById("stopBtn");
 const statusDot = document.getElementById("statusDot");
 const statusText = document.getElementById("statusText");
 const chatStatus = document.getElementById("chatStatus");
-const countryFlag =
-    document.getElementById("countryFlag");
-
-const countryName =
-    document.getElementById("countryName");
 const systemMessage = document.getElementById("systemMessage");
 
 const videoArea = document.getElementById("videoArea");
@@ -223,23 +218,6 @@ socket.on("waiting", () => {
 
 });
 
-function getCountryFlag(code) {
-
-    if (!code || code.length !== 2) {
-        return "🌍";
-    }
-
-    return code
-        .toUpperCase()
-        .replace(
-            /./g,
-            character =>
-                String.fromCodePoint(
-                    127397 +
-                    character.charCodeAt(0)
-                )
-        );
-}
 
 /* =========================
    PARTNER FOUND
@@ -248,17 +226,6 @@ function getCountryFlag(code) {
 socket.on("partner_found", async (data) => {
     partnerId = data.partnerId;
     isInitiator = data.initiator;
-   const country =
-    data.country || {
-        name: "Unknown",
-        code: ""
-    };
-
-countryName.textContent =
-    country.name || "Unknown location";
-
-countryFlag.textContent =
-    getCountryFlag(country.code);
     chatStatus.textContent = "Connected";
 
     setStatus("Connected", "online");

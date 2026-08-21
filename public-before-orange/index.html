@@ -2,38 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="theme-color" content="#ff7a00">
+    <meta
+        name="theme-color"
+        content="#080b14"
+    >
 
     <title>RandomChat</title>
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="/manifest.json">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+<link rel="manifest" href="/manifest.json">
 
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="theme-color" content="#080b14">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="apple-touch-icon" href="/icon-192.png">
+
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- =====================
-         TOP HEADER
-    ====================== -->
+    <!-- HEADER -->
 
     <header class="topbar">
 
         <div class="brand">
 
-<div class="brand-icon">
-    <img src="/logo.png" alt="RandomChat Logo">
-</div>
+            <div class="brand-icon">
+                💬
+            </div>
+
             <div class="brand-text">
-                <h1>Random<span>Chat</span></h1>
-                <small>Meet. Chat. Connect.</small>
+                <h1>RandomChat</h1>
+                <span>Meet someone new</span>
             </div>
 
         </div>
@@ -54,9 +65,7 @@
     </header>
 
 
-    <!-- =====================
-         WELCOME SCREEN
-    ====================== -->
+    <!-- WELCOME -->
 
     <section
         id="welcomeScreen"
@@ -66,118 +75,61 @@
         <div class="welcome-card">
 
             <div class="welcome-icon">
-
-                <div class="orange-face">
-                    <span class="eye left"></span>
-                    <span class="eye right"></span>
-                    <span class="smile"></span>
-                </div>
-
+                ✨
             </div>
 
+            <h2>Talk to someone new</h2>
 
-            <h2>
-                Random<span>Chat</span>
-            </h2>
-
-            <p class="welcome-subtitle">
-                Meet. Chat. Connect.
+            <p>
+                Connect instantly with a random stranger
+                and start a conversation.
             </p>
 
 
+            <!-- MODE -->
+
             <div class="mode-title">
-                Choose your chat mode
+                Choose your mode
             </div>
 
-
             <div class="mode-selector">
-
-
-                <!-- TEXT MODE -->
 
                 <button
                     id="textModeBtn"
                     class="mode active"
                     type="button"
                 >
-
-                    <div class="mode-icon">
-                        💬
-                    </div>
-
-                    <div class="mode-info">
-
-                        <strong>
-                            TEXT CHAT
-                        </strong>
-
-                        <small>
-                            Chat with strangers instantly
-                        </small>
-
-                    </div>
-
-                    <span class="mode-arrow">
-                        ›
-                    </span>
-
+                    <span>💬</span>
+                    <strong>Text</strong>
+                    <small>Chat by message</small>
                 </button>
-
-
-                <!-- VIDEO MODE -->
 
                 <button
                     id="videoModeBtn"
                     class="mode"
                     type="button"
                 >
-
-                    <div class="mode-icon">
-                        📹
-                    </div>
-
-                    <div class="mode-info">
-
-                        <strong>
-                            VIDEO CHAT
-                        </strong>
-
-                        <small>
-                            Meet face to face
-                        </small>
-
-                    </div>
-
-                    <span class="mode-arrow">
-                        ›
-                    </span>
-
+                    <span>📹</span>
+                    <strong>Video</strong>
+                    <small>Camera + microphone</small>
                 </button>
 
             </div>
 
-
-            <!-- START -->
 
             <button
                 id="startBtn"
                 class="start-button"
                 type="button"
             >
-
-                <span>
-                    Start Chat
-                </span>
-
-                <span class="start-arrow">
-                    ›
-                </span>
-
+                <span>Start Chat</span>
+                <span>→</span>
             </button>
 
 
             <div class="safety-note">
-                Stay friendly. Keep it fun. 🙂
+                🔒 Anonymous &nbsp; • &nbsp;
+                🛡️ Stay safe
             </div>
 
         </div>
@@ -185,15 +137,12 @@
     </section>
 
 
-    <!-- =====================
-         CHAT SCREEN
-    ====================== -->
+    <!-- CHAT -->
 
     <section
         id="chatScreen"
         class="chat-screen hidden"
     >
-
 
         <!-- VIDEO AREA -->
 
@@ -210,22 +159,13 @@
                     playsinline
                 ></video>
 
-
                 <div
                     id="remotePlaceholder"
                     class="video-placeholder"
                 >
-
-                    <div class="placeholder-icon">
-                        👤
-                    </div>
-
-                    <span>
-                        Waiting for stranger...
-                    </span>
-
+                    <div>👤</div>
+                    <span>Waiting for stranger...</span>
                 </div>
-
 
                 <div class="video-label">
                     Stranger
@@ -233,8 +173,6 @@
 
             </div>
 
-
-            <!-- LOCAL VIDEO -->
 
             <div class="local-video-container">
 
@@ -252,8 +190,6 @@
             </div>
 
 
-            <!-- VIDEO CONTROLS -->
-
             <div class="video-controls">
 
                 <button
@@ -264,7 +200,6 @@
                 >
                     🎤
                 </button>
-
 
                 <button
                     id="cameraBtn"
@@ -287,37 +222,18 @@
             <div class="stranger-info">
 
                 <div class="avatar">
-                    ☺
+                    👤
                 </div>
 
-<div class="stranger-details">
+                <div>
+                    <strong>Stranger</strong>
 
-    <div class="stranger-name">
-        <strong>Stranger</strong>
-
-        <span
-            id="countryFlag"
-            class="country-flag"
-        >
-            🌍
-        </span>
-    </div>
-
-    <span
-        id="chatStatus"
-    >
-        Searching...
-    </span>
-
-    <span
-        id="countryName"
-        class="country-name"
-    >
-        Unknown location
-    </span>
-
-</div>
-
+                    <span
+                        id="chatStatus"
+                    >
+                        Searching...
+                    </span>
+                </div>
 
             </div>
 
@@ -329,7 +245,7 @@
                     type="button"
                     title="Report"
                 >
-                    ⚠
+                    ⚠️
                 </button>
 
             </div>
@@ -348,10 +264,7 @@
                 id="emptyState"
                 class="empty-state"
             >
-
-                <div class="empty-icon">
-                    👋
-                </div>
+                <div>👋</div>
 
                 <strong>
                     Looking for someone...
@@ -366,7 +279,7 @@
         </div>
 
 
-        <!-- SYSTEM MESSAGE -->
+        <!-- SYSTEM STATUS -->
 
         <div
             id="systemMessage"
@@ -392,13 +305,13 @@
                 disabled
             >
 
-
             <button
                 id="sendBtn"
                 type="submit"
                 disabled
             >
-                ➤
+                <span>Send</span>
+                <span>➤</span>
             </button>
 
         </form>
@@ -408,37 +321,23 @@
 
         <div class="bottom-controls">
 
-
             <button
                 id="nextBtn"
                 class="next-button"
                 type="button"
                 disabled
             >
-                <span class="button-icon">
-                    ⏭
-                </span>
-
-                <span>
-                    Next Stranger
-                </span>
-
+                ⏭
+                <span>Next Stranger</span>
             </button>
-
 
             <button
                 id="stopBtn"
                 class="stop-button"
                 type="button"
             >
-                <span class="button-icon">
-                    ⏹
-                </span>
-
-                <span>
-                    Stop
-                </span>
-
+                ⏹
+                <span>Stop</span>
             </button>
 
         </div>
@@ -453,9 +352,7 @@
 </div>
 
 
-<!-- =====================
-     REPORT MODAL
-===================== -->
+<!-- REPORT MODAL -->
 
 <div
     id="reportModal"
@@ -472,49 +369,42 @@
             ×
         </button>
 
-
-        <h2>
-            Report Stranger
-        </h2>
+        <h2>Report Stranger</h2>
 
         <p>
             Why are you reporting this person?
         </p>
-
 
         <button
             class="report-option"
             data-reason="Harassment"
             type="button"
         >
-            🚩 Harassment
+            Harassment
         </button>
-
 
         <button
             class="report-option"
             data-reason="Spam"
             type="button"
         >
-            ⊘ Spam
+            Spam
         </button>
-
 
         <button
             class="report-option"
             data-reason="Inappropriate content"
             type="button"
         >
-            ⚠ Inappropriate content
+            Inappropriate content
         </button>
-
 
         <button
             class="report-option"
             data-reason="Other"
             type="button"
         >
-            💬 Other
+            Other
         </button>
 
     </div>
@@ -524,7 +414,6 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="app.js"></script>
-
 <script>
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

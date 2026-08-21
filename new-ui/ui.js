@@ -1,0 +1,1 @@
+const mode=new URLSearchParams(location.search).get("mode")||"text";setTimeout(()=>location.href=mode==="video"?"video.html":"chat.html",2200);

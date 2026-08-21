@@ -14,6 +14,82 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
+function getClientIp(socket) {
+    const forwarded =
+        socket.handshake.headers["x-forwarded-for"];
+
+    if (forwarded) {
+        return forwarded
+            .split(",")[0]
+            .trim();
+    }
+
+    return socket.handshake.address;
+}
+
+
+async function getCountryFromIp(ip) {
+
+    try {
+
+        if (
+            !ip ||
+            ip === "127.0.0.1" ||
+            ip === "::1"
+        ) {
+            return {
+                name: "Unknown",
+                code: ""
+            };
+        }
+
+        const response = await fetch(
+            `https://ipwho.is/${ip}`
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+            return {
+                name: data.country || "Unknown",
+                code: data.country_code || ""
+            };
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Country lookup error:",
+            error.message
+        );
+
+    }
+
+    return {
+        name: "Unknown",
+        code: ""
+    };
+}
+
+
+function countryCodeToFlag(code) {
+
+    if (!code || code.length !== 2) {
+        return "🌍";
+    }
+
+    return code
+        .toUpperCase()
+        .replace(
+            /./g,
+            character =>
+                String.fromCodePoint(
+                    127397 +
+                    character.charCodeAt(0)
+                )
+        );
+}
+
 app.use(express.static(path.join(__dirname, "public")));
 
 
@@ -87,12 +163,13 @@ partnerData.waiting = false;
 socket.join(partner.id);
 partner.join(socket.id);
 
-            socket.emit(
+socket.emit(
     "partner_found",
     {
         mode: mode,
         partnerId: partner.id,
-        initiator: true
+        initiator: true,
+        country: partnerData.country
     }
 );
 
@@ -101,10 +178,10 @@ partner.emit(
     {
         mode: mode,
         partnerId: socket.id,
-        initiator: false
+        initiator: false,
+        country: users.get(socket.id).country
     }
 );
-
             console.log(
                 `Matched ${socket.id} with ${partner.id}`
             );
@@ -128,15 +205,36 @@ io.on("connection", (socket) => {
         socket.id
     );
 
-    users.set(
-        socket.id,
-        {
-            partnerId: null,
-            mode: "text",
-            waiting: false
-        }
-    );
+const ip = getClientIp(socket);
 
+users.set(
+    socket.id,
+    {
+        partnerId: null,
+        mode: "text",
+        waiting: false,
+        country: {
+            name: "Loading...",
+            code: ""
+        }
+    }
+);
+
+
+getCountryFromIp(ip)
+    .then(country => {
+
+        const user = users.get(socket.id);
+
+        if (user) {
+            user.country = country;
+
+            console.log(
+                `User country: ${country.name}`
+            );
+        }
+
+    });
 
     // ===========================
     // FIND PARTNER
