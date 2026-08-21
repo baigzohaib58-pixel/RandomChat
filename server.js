@@ -204,41 +204,41 @@ io.on("connection", (socket) => {
     // TEXT MESSAGE
     // ===========================
 
-    socket.on(
-        "message",
-        (data) => {
+socket.on(
+    "message",
+    (data) => {
 
-            const user =
-                users.get(socket.id);
+        const user = users.get(socket.id);
 
-            if (!user || !user.partnerId) {
-                return;
-            }
-
-            const text =
-                typeof data === "string"
-                    ? data
-                    : data?.text;
-
-            if (!text) return;
-
-            const cleanText =
-                String(text)
-                    .trim()
-                    .slice(0, 1000);
-
-            if (!cleanText) return;
-
-            io.to(user.partnerId).emit(
-                "message",
-                {
-                    text: cleanText
-                }
-            );
-
+        if (!user || !user.partnerId) {
+            return;
         }
-    );
 
+        const text =
+            typeof data === "string"
+                ? data
+                : data?.text;
+
+        if (!text) return;
+
+        const cleanText =
+            String(text)
+                .trim()
+                .slice(0, 1000);
+
+        if (!cleanText) return;
+
+        // Send the message only to the matched stranger
+        io.to(user.partnerId).emit(
+            "message",
+            {
+                text: cleanText,
+                senderId: socket.id
+            }
+        );
+
+    }
+);
 
     // ===========================
     // NEXT

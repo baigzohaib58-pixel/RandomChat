@@ -546,6 +546,11 @@ messageForm.addEventListener(
 
 socket.on("message", data => {
 
+    // Ignore a message if it somehow came back to its sender
+    if (data?.senderId === socket.id) {
+        return;
+    }
+
     const text =
         typeof data === "string"
             ? data
@@ -556,7 +561,6 @@ socket.on("message", data => {
     addMessage(text, "stranger");
 
 });
-
 
 function addMessage(text, type) {
 
