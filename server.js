@@ -75,14 +75,17 @@ function findPartner(socket, mode) {
             partnerData.partnerId =
                 socket.id;
 
-            users.get(socket.id).mode =
-                mode;
+users.get(socket.id).mode =
+    mode;
 
-            partnerData.mode =
-                mode;
+partnerData.mode =
+    mode;
 
-            socket.join(partner.id);
-            partner.join(socket.id);
+users.get(socket.id).waiting = false;
+partnerData.waiting = false;
+
+socket.join(partner.id);
+partner.join(socket.id);
 
             socket.emit(
     "partner_found",
